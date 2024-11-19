@@ -1,3 +1,6 @@
+# What is this?
+Table view for s3 bucket objects allowing sorting and filtering and downloading of objects.
+
 # Getting Started
 
 - Create `.env` file in the root directory and add the following:
