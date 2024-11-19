@@ -15,4 +15,8 @@ VITE_AWS_SESSION_TOKEN=""
 # Running the app
 - run `npm start`
 
+# Example
+
+![image](misc/Vite-React-TS-11-19-2024_11_40_PM.png)
+
 
