@@ -42,18 +42,33 @@ const S3TableView: React.FC = () => {
 
   const fetchObjects = async (bucketName: string) => {
     setLoading(true);
+    let allObjects: S3Object[] = [];
+    let isTruncated: boolean | undefined = true;
+    let continuationToken: string | undefined = undefined;
+
     try {
-      const command = new ListObjectsV2Command({ Bucket: bucketName });
-      const response = await s3Client.send(command);
-      if (response.Contents) {
-        const transformedData = response.Contents.map((item) => ({
-          Key: item.Key!,
-          Size: item.Size!,
-          LastModified: item.LastModified!,
-        }));
-        setObjects(transformedData);
-        setFilteredObjects(transformedData);
+      while (isTruncated) {
+        const command: ListObjectsV2Command = new ListObjectsV2Command({
+          Bucket: bucketName,
+          ContinuationToken: continuationToken,
+        });
+        const response = await s3Client.send(command);
+
+        if (response.Contents) {
+          const transformedData = response.Contents.map((item) => ({
+            Key: item.Key!,
+            Size: item.Size!,
+            LastModified: item.LastModified!,
+          }));
+          allObjects = allObjects.concat(transformedData);
+        }
+
+        isTruncated = response.IsTruncated;
+        continuationToken = response.NextContinuationToken;
       }
+
+      setObjects(allObjects);
+      setFilteredObjects(allObjects);
     } catch (error) {
       console.error("Error fetching objects from S3 bucket", error);
     } finally {
@@ -134,7 +149,7 @@ const S3TableView: React.FC = () => {
             <CircularProgress />
           ) : (
             <div>
-              <p>Current Objects: {filteredObjects.length}</p>
+              <p>Count: {filteredObjects.length}</p>
               <Pagination
                 count={Math.ceil(filteredObjects.length / ITEMS_PER_PAGE)}
                 page={page}
